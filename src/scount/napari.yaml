@@ -1,0 +1,57 @@
+name: scount
+display_name: SCount
+# use 'hidden' to remove plugin from napari hub search results
+visibility: public
+# see https://napari.org/stable/plugins/technical_references/manifest.html#fields for valid categories
+# categories: []
+contributions:
+  commands:
+    - id: scount.get_reader
+      python_name: scount._reader:napari_get_reader
+      title: Open data with SCount
+    - id: scount.write_multiple
+      python_name: scount._writer:write_multiple
+      title: Save multi-layer data with SCount
+    - id: scount.write_single_image
+      python_name: scount._writer:write_single_image
+      title: Save image data with SCount
+    - id: scount.make_sample_data
+      python_name: scount._sample_data:make_sample_data
+      title: Load sample data from SCount
+    - id: scount.make_container_widget
+      python_name: scount:ImageThreshold
+      title: Make threshold Container widget
+    - id: scount.make_magic_widget
+      python_name: scount:threshold_magic_widget
+      title: Make threshold magic widget
+    - id: scount.make_function_widget
+      python_name: scount:threshold_autogenerate_widget
+      title: Make threshold function widget
+    - id: scount.make_qwidget
+      python_name: scount:ExampleQWidget
+      title: Make example QWidget
+  readers:
+    - command: scount.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  writers:
+    - command: scount.write_multiple
+      layer_types: ['image*','labels*']
+      filename_extensions: []
+    - command: scount.write_single_image
+      layer_types: ['image']
+      filename_extensions: ['.npy']
+  sample_data:
+    - command: scount.make_sample_data
+      display_name: SCount
+      key: unique_id.1
+  widgets:
+    - command: scount.make_container_widget
+      display_name: Container Threshold
+    - command: scount.make_magic_widget
+      display_name: Magic Threshold
+    - command: scount.make_function_widget
+      autogenerate: true
+      display_name: Autogenerate Threshold
+    - command: scount.make_qwidget
+      display_name: Example QWidget

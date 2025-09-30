@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v1.1.0
+_src_path: https://github.com/napari/napari-plugin-template
+display_name: SCount
+email: jaytn07@gmail.com
+full_name: jayden nguyen-do
+github_repository_url: provide later
+github_username_or_organization: ce07o
+include_reader_plugin: true
+include_sample_data_plugin: true
+include_widget_plugin: true
+include_writer_plugin: true
+install_dependabot: true
+install_precommit: false
+license: MIT
+module_name: scount
+plugin_name: scount
+short_description: count and identify microbial colonies
