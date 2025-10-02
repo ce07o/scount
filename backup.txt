@@ -228,7 +228,7 @@ def seg_counting(labels, xxxxxx, img, lam, self):
                 if d > d_max:
                     d_max = d
                     ind = j
-            if d_max > float(self._d_t_edtfld.value):
+            if d_max > float(self._d_t_slider.value):
                 turning_points = np.append(turning_points, [cnt[ind]], axis=0)
                 i, k = ind, ind+2
             else:
@@ -329,67 +329,80 @@ def seg_counting(labels, xxxxxx, img, lam, self):
 
 
 
-class SCount(Container):
+class GreyscaleConverter(Container):
     def __init__(self, viewer: "napari.viewer.Viewer"):
         super().__init__()
 
+        self._bin_mask = None
+        self._crop_rgb = None
+
         self._viewer = viewer
 
-        self._image_layer = create_widget(label="image", annotation="napari.layers.Image")
+        self._image_layer = create_widget(label="Image", annotation="napari.layers.Image")
 
-        self._threshold_btn = PushButton(text="threshold")
-        self._threshold_btn.clicked.connect(self._threshold)
+        self._convert_btn = PushButton(text="threshold")
+        self._convert_btn.clicked.connect(self._convert)
 
         self._count_btn = PushButton(text="count")
         self._count_btn.clicked.connect(self._count)
 
-        self._crop_cx_edtfld = create_widget(
-            label="crop center x", annotation=float, options={'value': 1500, 'min': 0, 'max': 5000, 'step': 25}
+        self._sigma_bg_slider = create_widget(
+            label="sigma bg", annotation=float, widget_type="FloatSlider"
         )
+        self._sigma_bg_slider.min = 3
+        self._sigma_bg_slider.max = 200
+        self._sigma_bg_slider.value = 100
 
-        self._crop_cy_edtfld = create_widget(
-            label="crop center y", annotation=float, options={'value': 1500, 'min': 0, 'max': 5000, 'step': 25}
-        )
 
-        self._crop_rad_edtfld = create_widget(
-            label="crop radius", annotation=float, options={'value': 1600, 'min': 0, 'max': 2500, 'step': 25}
+        self._min_area_slider = create_widget(
+            label="min area (px^2)", annotation=float, widget_type="FloatSlider"
         )
+        self._min_area_slider.min = 0
+        self._min_area_slider.max = 1000
+        self._min_area_slider.value = 60
 
-        self._sigma_bg_small_edtfld = create_widget(
-            label="sigma bg", annotation=float, options={'value': 75, 'min': 3, 'max': 1000, 'step': 10}
+        self._close_radius_slider = create_widget(
+            label="close radius (px)", annotation=float, widget_type="FloatSlider"
         )
+        self._close_radius_slider.min = 0
+        self._close_radius_slider.max = 20
+        self._close_radius_slider.value = 0
 
-        self._sigma_bg_large_edtfld = create_widget(
-            label="sigma bg", annotation=float, options={'value': 250, 'min': 3, 'max': 1000, 'step': 10}
+        self._hole_area_slider = create_widget(
+            label="hole area (px^2)", annotation=float, widget_type="FloatSlider"
         )
+        self._hole_area_slider.min = 0
+        self._hole_area_slider.max = 20000
+        self._hole_area_slider.value = 10000
 
-        self._min_area_edtfld = create_widget(
-            label="min area (px^2)", annotation=float, options={'value': 15, 'min': 0, 'max': 100, 'step': 1}
+        self._circ_thresh_slider = create_widget(
+            label="min circularity", annotation=float, widget_type="FloatSlider"
         )
+        self._circ_thresh_slider.min = 0
+        self._circ_thresh_slider.max = 1
+        self._circ_thresh_slider.value = 0.5
 
-        self._obr_rad_edtfld = create_widget(
-            label="OBR radius", annotation=float, options={'value': 3, 'min': 0, 'max': 100, 'step': 1}
+        self._max_ecc_slider = create_widget(
+            label="max eccentricity", annotation=float, widget_type="FloatSlider"
         )
+        self._max_ecc_slider.min = 0
+        self._max_ecc_slider.max = 1
+        self._max_ecc_slider.value = 0.85
 
-        self._hole_area_edtfld = create_widget(
-            label="max hole area (px^2)", annotation=float, options={'value': 10000, 'min': 0, 'max': 20000, 'step': 5000}
+        self._d_t_slider = create_widget(
+            label="d_t", annotation=float, widget_type="FloatSlider"
         )
+        self._d_t_slider.min = 0
+        self._d_t_slider.max = 1
+        self._d_t_slider.value = 0.5
 
-        self._circ_thresh_edtfld = create_widget(
-            label="min circularity", annotation=float, options={'value': 0.10, 'min': 0, 'max': 1, 'step': 0.05}
+        self._lam_slider = create_widget(
+            label="lambda", annotation=float, widget_type="FloatSlider"
         )
+        self._lam_slider.min = 0
+        self._lam_slider.max = 1000
+        self._lam_slider.value = 30
 
-        self._max_ecc_edtfld = create_widget(
-            label="max eccentricity", annotation=float, options={'value': 0.95, 'min': 0, 'max': 1, 'step': 0.05}
-        )
-
-        self._d_t_edtfld = create_widget(
-            label="d_t", annotation=float, options={'value': 0.3, 'min': 0, 'max': 1, 'step': 0.05}
-        )
-
-        self._lam_edtfld = create_widget(
-            label="lambda", annotation=float, options={'value': 150, 'min': 0, 'max': 1000, 'step': 10}
-        )
 
 
         self._invert_checkbox = CheckBox(text="invert")
@@ -398,28 +411,27 @@ class SCount(Container):
         self.extend(
             [
                 self._image_layer,
-                self._threshold_btn,
+                self._convert_btn,
                 self._count_btn,
-                self._crop_cx_edtfld,
-                self._crop_cy_edtfld,
-                self._crop_rad_edtfld,
-                self._sigma_bg_small_edtfld,
-                self._sigma_bg_large_edtfld,
-                self._min_area_edtfld,
-                self._obr_rad_edtfld,
-                self._hole_area_edtfld,
-                self._circ_thresh_edtfld,
-                self._max_ecc_edtfld,
-                self._d_t_edtfld,
-                self._lam_edtfld,
+                self._sigma_bg_slider,
+                self._min_area_slider,
+                self._close_radius_slider,
+                self._hole_area_slider,
+                self._circ_thresh_slider,
+                self._max_ecc_slider,
+                self._d_t_slider,
+                self._lam_slider,
                 self._invert_checkbox,
             ]
         )
 
-    def _build_threshold(self, img: np.ndarray):
+    def _convert(self):
+        if self._image_layer.value is None:
+            return
+
+        img = np.asarray(self._image_layer.value.data)
         H, W = img.shape[:2]
-        # cx, cy, R = W//2, H//2, int(min(H, W) * 0.3)
-        cx, cy, R = int(self._crop_cx_edtfld.value), int(self._crop_cy_edtfld.value), int(self._crop_rad_edtfld.value)
+        cx, cy, R = W//2, H//2, int(min(H, W) * 0.3)
         x0, y0 = max(cx - R, 0), max(cy - R, 0)
         x1, y1 = min(cx + R, W), min(cy + R, H)
         crop = img[y0:y1, x0:x1]
@@ -435,16 +447,7 @@ class SCount(Container):
             gray = crop
         I = img_as_float(gray).astype(np.float32)
 
-        # bg = filters.gaussian(I, sigma=float(self._sigma_bg_edtfld.value), preserve_range=True).astype(np.float32)
-
-        sigma_small = float(self._sigma_bg_small_edtfld.value)   # ~ radius of largest *single* colony (e.g. 60–90)
-        sigma_large = float(self._sigma_bg_large_edtfld.value)   # ~ radius of typical merged globs (e.g. 150–300)
-
-        bg_s = filters.gaussian(I, sigma=sigma_small, preserve_range=True).astype(np.float32)
-        bg_l = filters.gaussian(I, sigma=sigma_large, preserve_range=True).astype(np.float32)
-
-        bg = np.minimum(bg_s, bg_l)
-
+        bg = filters.gaussian(I, sigma=float(self._sigma_bg_slider.value), preserve_range=True).astype(np.float32)
         bg = np.clip(bg, 1e-6, None)
         I_flat = (I / bg)
 
@@ -455,80 +458,66 @@ class SCount(Container):
         I_flat = exposure.rescale_intensity(I_flat, in_range=(0.02, 0.98))
 
         J = (1.0 - I_flat) if self._invert_checkbox.value else I_flat
-
         t = filters.threshold_otsu(J[roi])
         bin_crop = np.zeros_like(J, dtype=bool)
         bin_crop[roi] = (J[roi] > t)
 
-        if self._min_area_edtfld.value > 0:
-            bin_crop = morphology.remove_small_objects(bin_crop, min_size=int(self._min_area_edtfld.value))
-
-        if self._obr_rad_edtfld.value > 0:
-            se = morphology.disk(int(self._obr_rad_edtfld.value))
-            seed = morphology.erosion(bin_crop, se)
-            bin_crop = morphology.reconstruction(seed, bin_crop, method='dilation').astype(bool)
-
-        if self._hole_area_edtfld.value > 0:
-            bin_crop = bin_crop.astype(bool)
-            bin_crop = morphology.remove_small_holes(bin_crop, area_threshold=int(self._hole_area_edtfld.value))
+        if self._min_area_slider.value > 0:
+            bin_crop = morphology.remove_small_objects(bin_crop, min_size=int(self._min_area_slider.value))
+        if self._close_radius_slider.value > 0:
+            bin_crop = morphology.binary_closing(bin_crop, morphology.disk(int(self._close_radius_slider.value)))
+        if self._hole_area_slider.value > 0:
+            bin_crop = morphology.remove_small_holes(bin_crop, area_threshold=int(self._hole_area_slider.value))
 
         labels = measure.label(bin_crop, connectivity=2)
+
         keep = np.zeros_like(bin_crop, dtype=bool)
         for prop in measure.regionprops(labels):
             perim = prop.perimeter
             if perim <= 0:
                 continue
             circ = 4.0 * np.pi * (prop.area / (perim * perim))
-            if circ >= float(self._circ_thresh_edtfld.value) and prop.eccentricity <= float(self._max_ecc_edtfld.value):
+            if circ >= float(self._circ_thresh_slider.value) and prop.eccentricity <= float(self._max_ecc_slider.value):
                 keep[labels == prop.label] = True
 
-        mask_u8 = (keep & roi).astype(np.uint8)
+        bin_crop = keep
+        bin_crop &= roi
 
-        crop_rgb = crop if crop.ndim == 3 else cv2.cvtColor(crop, cv2.COLOR_GRAY2BGR)
+        self._bin_mask = (bin_crop.astype(np.uint8))
+        self._crop_rgb = crop if crop.ndim == 3 else cv2.cvtColor(crop, cv2.COLOR_GRAY2BGR)
 
-        return mask_u8, crop_rgb
-
-
-
-
-    def _threshold(self):
-        if self._image_layer.value is None:
-            return
-        img = np.asarray(self._image_layer.value.data)
-
-        mask_u8, crop_rgb = self._build_threshold(img)
-        bin_vis = (mask_u8 * 255)
+        bin_vis = (bin_crop.astype(np.uint8) * 255)
         self._viewer.add_image(bin_vis, name=f"{self._image_layer.value.name}_thresh")
-
-
 
 
 
     def _count(self):
         if self._image_layer.value is None:
             return
+
+        if self._bin_mask is None or self._crop_rgb is None:
+            self._convert()
+            if self._bin_mask is None:
+                return
+
+        mask_u8 = (self._bin_mask > 0).astype(np.uint8)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask_u8, connectivity=8)
+     
         img = np.asarray(self._image_layer.value.data)
 
-        use_raw = (img.ndim == 2 and img.dtype in (np.uint8, np.bool_))
-        if use_raw:
-            mask_u8 = (img > 0).astype(np.uint8)
-            crop_rgb = cv2.cvtColor((img > 0).astype(np.uint8) * 255, cv2.COLOR_GRAY2BGR)
-        else:
-            mask_u8, crop_rgb = self._build_threshold(img)
-
-        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(mask_u8, connectivity=8)
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(img)
 
         counting_result = 0
-        img_overlay = crop_rgb.copy()
+        img_overlay = self._crop_rgb.copy()
 
         for xxxxxx in range(1, num_labels):
             counted_cell_number, img_overlay, img_seg = seg_counting(
-                labels, xxxxxx, img_overlay, int(self._lam_edtfld.value), self
+                labels, xxxxxx, img_overlay, int(self._lam_slider.value), self
             )
             counting_result += counted_cell_number
 
         self._viewer.add_image(img_overlay, name=f"{self._image_layer.value.name}_overlay")
-        print(f"total count: {counting_result}")
+        print(f"counted colonies: {counting_result}")
 
 
       

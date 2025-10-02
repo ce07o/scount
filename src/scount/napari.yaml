@@ -30,6 +30,9 @@ contributions:
     - id: scount.make_qwidget
       python_name: scount:ExampleQWidget
       title: Make example QWidget
+    - id: scount.make_container_widget_2
+      python_name: scount:SCount
+      title: Make SCount Container widget
   readers:
     - command: scount.get_reader
       accepts_directories: false
@@ -55,3 +58,5 @@ contributions:
       display_name: Autogenerate Threshold
     - command: scount.make_qwidget
       display_name: Example QWidget
+    - command: scount.make_container_widget_2
+      display_name: SCount

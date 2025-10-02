@@ -1,0 +1,25 @@
+name: scount
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - xarray<2025.3.0
+  - imageio
+  - pooch
+  - pytorch
+  - torchvision
+  - tensorboard
+  - tifffile
+  - scikit-image
+  - matplotlib-base
+  - pulp
+  - pip
+  - pip:
+      - pyside6==6.7.3
+      - napari==0.5.5
+      - opencv-python-headless==4.10.0.84
+      - bioimageio.core==0.9.2
