@@ -356,11 +356,11 @@ class SCount(Container):
         )
 
         self._sigma_bg_small_edtfld = create_widget(
-            label="sigma bg", annotation=float, options={'value': 75, 'min': 3, 'max': 1000, 'step': 10}
+            label="small sigma bg", annotation=float, options={'value': 75, 'min': 3, 'max': 1000, 'step': 10}
         )
 
         self._sigma_bg_large_edtfld = create_widget(
-            label="sigma bg", annotation=float, options={'value': 250, 'min': 3, 'max': 1000, 'step': 10}
+            label="large sigma bg", annotation=float, options={'value': 250, 'min': 3, 'max': 1000, 'step': 10}
         )
 
         self._min_area_edtfld = create_widget(
@@ -368,7 +368,7 @@ class SCount(Container):
         )
 
         self._obr_rad_edtfld = create_widget(
-            label="OBR radius", annotation=float, options={'value': 3, 'min': 0, 'max': 100, 'step': 1}
+            label="OBR radius (px)", annotation=float, options={'value': 3, 'min': 0, 'max': 100, 'step': 1}
         )
 
         self._hole_area_edtfld = create_widget(
@@ -376,19 +376,19 @@ class SCount(Container):
         )
 
         self._circ_thresh_edtfld = create_widget(
-            label="min circularity", annotation=float, options={'value': 0.10, 'min': 0, 'max': 1, 'step': 0.05}
+            label="min circularity", annotation=float, options={'value': 0.10, 'min': 0, 'max': 1, 'step': 0.025}
         )
 
         self._max_ecc_edtfld = create_widget(
-            label="max eccentricity", annotation=float, options={'value': 0.95, 'min': 0, 'max': 1, 'step': 0.05}
+            label="max eccentricity", annotation=float, options={'value': 0.95, 'min': 0, 'max': 1, 'step': 0.025}
         )
 
         self._d_t_edtfld = create_widget(
-            label="d_t", annotation=float, options={'value': 0.3, 'min': 0, 'max': 1, 'step': 0.05}
+            label="d_t", annotation=float, options={'value': 0.3, 'min': 0, 'max': 1, 'step': 0.025}
         )
 
         self._lam_edtfld = create_widget(
-            label="lambda", annotation=float, options={'value': 150, 'min': 0, 'max': 1000, 'step': 10}
+            label="lambda", annotation=float, options={'value': 150, 'min': 0, 'max': 1000, 'step': 5}
         )
 
 
